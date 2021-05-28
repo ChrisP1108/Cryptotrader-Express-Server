@@ -1,5 +1,7 @@
 const express = require('express');
+const Login = require('../models/login');
 const loginRouter = express.Router();
+const authenticate = require('../authenticate');
 
 loginRouter.route('/')
 .all((req, res, next) => {
@@ -10,8 +12,11 @@ loginRouter.route('/')
 .get((req, res) => {
     res.end('Login modal content will be sent to you');
 })
-.post((req, res) => {
-    res.end(`Login ${req.body.name} will be added`);
+.post('/login', passport.authenticate('local'), (req, res) => {
+    const token = authenticate.getToken({_id: req.user._id});
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({success: true, token: token, status: 'You are successfully logged in!'});
 })
 .put((req, res) => {
     res.statusCode = 403;

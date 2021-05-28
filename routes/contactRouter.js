@@ -1,25 +1,41 @@
 const express = require('express');
+const Contact = require('../models/contact');
 const contactRouter = express.Router();
+const authenticate = require('../authenticate');
 
 contactRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Contact.find()
+    .populate('author')
+    .then(contact => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(contact);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end('Contact page content will be sent to you');
+.post((req, res, next) => {
+    Contact.create(req.body)
+    .then(contact => {
+        console.log('Contact Created ', campsite);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(contact);
+    })
+    .catch(err => next(err));
 })
-.post((req, res) => {
-    res.end(`Contact ${req.body.name} will be added`);
-})
-.put((req, res) => {
+.put(authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /contact');
 })
-.delete((req, res) => {
-    res.statusCode = 403;
-    res.end('DELETE operation not supported on /contact');
+.delete(authenticate.verifyUser, (req, res, next) => {
+    Contact.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 module.exports = contactRouter;

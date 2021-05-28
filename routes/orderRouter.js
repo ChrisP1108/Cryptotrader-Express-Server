@@ -1,23 +1,34 @@
 const express = require('express');
+const Order = require('../models/order');
 const orderRouter = express.Router();
+const authenticate = require('../authenticate');
 
 orderRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
 .get((req, res) => {
     res.end('Order page content will be sent to you');
 })
-.post((req, res) => {
-    res.end(`Order ${req.body.name} will be added`);
+.post(authenticate.verifyUser, (req, res, next) => {
+    Order.create(req.body)
+    .then(order => {
+        console.log('Campsite Created ', campsite);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(order);
+    })
+    .catch(err => next(err));
 })
-.put((req, res) => {
-    res.end(`Order ${req.body.name} will be modified`);
+.put(authenticate.verifyUser, (req, res) => {
+    res.statusCode = 403;
+    res.end('PUT operation not supported on /campsites');
 })
-.delete((req, res) => {
-    res.end('Order will be deleted');
+.delete(authenticate.verifyUser, (req, res, next) => {
+    Order.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 module.exports = orderRouter;

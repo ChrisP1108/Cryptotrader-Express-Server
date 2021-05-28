@@ -1,7 +1,7 @@
 const express = require('express');
-const homeRouter = express.Router();
+const indexRouter = express.Router();
 
-homeRouter.route('/')
+indexRouter.route('/')
 .all((req, res, next) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
@@ -23,4 +23,4 @@ homeRouter.route('/')
     res.end('DELETE operation not supported on /home');
 });
 
-module.exports = homeRouter;
+module.exports = indexRouter;
