@@ -2,12 +2,10 @@
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
-const logger  =require('morgan');
+const logger = require('morgan');
 const passport = require('passport');
 const config = require('./config');
 
-app.use(morgan('dev'));
-app.use(express.json());
 
 // Routes
 const indexRouter = require('./routes/indexRouter');
@@ -15,7 +13,7 @@ const softwareRouter = require('./routes/softwareRouter');
 const orderRouter = require('./routes/orderRouter');
 const aboutRouter = require('./routes/aboutRouter');
 const contactRouter = require('./routes/contactRouter');
-const loginRouter = require('./routes/loginRouter');
+const usersRouter = require('./routes/usersRouter');
 
 // Mongoose
 const mongoose = require('mongoose')
@@ -37,6 +35,17 @@ connect.then(() => console.log('Connected correctly to server'),
 // App Express
 const app = express();
 
+
+//Redirect Message
+app.all('*', (req, res, next) => {
+    if (req.secure) {
+        return next();
+    } else {
+        console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
+        res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
+    }
+});
+
 // Engine Setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -44,10 +53,13 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-//app.use(cookieParser('12345-67890-09876-54321'));
+
+//Passport 
+app.use(passport.initialize());
 
 // Route Links
 app.use('/', indexRouter);
+app.use('/users', usersRouter);
 
 app.use(express.static(__dirname + '/public'));
 
@@ -55,7 +67,6 @@ app.use('/software', softwareRouter);
 app.use('/order', orderRouter);
 app.use('/about', aboutRouter);
 app.use('/contact', contactRouter);
-app.use('/login', loginRouter);
 
 // 404 Error And Forward To Error Handler
 app.use(function(req, res, next) {

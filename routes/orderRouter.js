@@ -2,15 +2,23 @@ const express = require('express');
 const Order = require('../models/order');
 const orderRouter = express.Router();
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 orderRouter.route('/')
-.get((req, res) => {
-    res.end('Order page content will be sent to you');
+.get((req, res, next) => {
+    Order.find()
+    .populate('comments.author')
+    .then(orders => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(orders);
+    })
+    .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post((req, res, next) => {
     Order.create(req.body)
     .then(order => {
-        console.log('Campsite Created ', campsite);
+        console.log('Campsite Created ', order);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json(order);
@@ -19,7 +27,7 @@ orderRouter.route('/')
 })
 .put(authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
-    res.end('PUT operation not supported on /campsites');
+    res.end('PUT operation not supported on /order');
 })
 .delete(authenticate.verifyUser, (req, res, next) => {
     Order.deleteMany()

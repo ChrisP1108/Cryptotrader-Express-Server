@@ -1,18 +1,18 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-require('mongoose-currency').loadType(mongoose);
-const Currency = mongoose.Types.Currency;
-
 const orderSchema = new Schema({
-    cartItems: {
-        type: Object,
+    id: {
+        type: String,
         required: true
     },
-    cartTotal: {
-        type: Currency,
-        required: true,
-        min: 0
+    title: {
+        type: String,
+        required: true
+    },
+    price: {
+        type: String,
+        required: true
     }
 }, {
     timestamps: true

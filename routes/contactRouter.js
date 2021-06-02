@@ -2,11 +2,13 @@ const express = require('express');
 const Contact = require('../models/contact');
 const contactRouter = express.Router();
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 contactRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Contact.find()
-    .populate('author')
+    .populate('comments.author')
     .then(contact => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -14,21 +16,28 @@ contactRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Contact.create(req.body)
     .then(contact => {
-        console.log('Contact Created ', campsite);
+        console.log('Contact Page Content Added: ', contact);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json(contact);
     })
     .catch(err => next(err));
 })
-.put(authenticate.verifyUser, (req, res) => {
-    res.statusCode = 403;
-    res.end('PUT operation not supported on /contact');
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Contact.findByIdAndUpdate(req.params.contactId, {
+        $set: req.body
+    }, { new: true })
+    .then(contact => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(contact);
+    })
+    .catch(err => next(err));
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Contact.deleteMany()
     .then(response => {
         res.statusCode = 200;
