@@ -8,7 +8,7 @@ orderRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
     Order.find()
-    .populate('order.author')
+    .populate('placement.author')
     .then(order => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -44,7 +44,7 @@ orderRouter.route('/:orderId')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
     Order.findById(req.params.orderId)
-    .populate('order.author')
+    .populate('placement.author')
     .then(order => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -174,11 +174,14 @@ orderRouter.route('/:orderId/placement/:placementId')
     .then(order => {  
         if ((req.user._id).equals(order.placement.id(req.params.placementId).author._id)) {
             if (order && order.placement.id(req.params.placementId)) {
-                if (req.body.rating) {
-                    order.placement.id(req.params.placementId).rating = req.body.rating;
+                if (req.body.id) {
+                    order.placement.id(req.params.placementId).id = req.body.id;
                 }
-                if (req.body.text) {
-                    order.placement.id(req.params.placementId).text = req.body.text;
+                if (req.body.title) {
+                    order.placement.id(req.params.placementId).title = req.body.title;
+                }
+                if (req.body.price) {
+                    order.placement.id(req.params.placementId).price = req.body.price;
                 }
                 order.save()
                 .then(order => {
@@ -192,7 +195,7 @@ orderRouter.route('/:orderId/placement/:placementId')
                 err.status = 404;
                 return next(err);
             } else {
-                err = new Error(`Order Feedback ${req.params.feedbackId} not found`);
+                err = new Error(`Order Placement ${req.params.placementId} not found`);
                 err.status = 404;
                 return next(err);
             }

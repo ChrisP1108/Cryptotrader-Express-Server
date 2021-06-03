@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const contactSchema = new Schema({
+const inputSchema = new Schema({
     firstName: {
         type: String,
         required: true
@@ -10,20 +10,56 @@ const contactSchema = new Schema({
         type: String,
         required: true
     },
-    feedback: {
+    phoneNum: {
+        type: Number,
+        required: true
+    },
+    email: {
         type: String,
         required: true
     },
-    rating: {
-        type: Number,
-        min: 1,
-        max: 10,
+    agree : {
+        type: Boolean,
+        required: false
+    },
+    feedback: {
+        type: String,
         required: true
     },    
     author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'        
     }
+}, {
+    timestamps: true
+});
+
+const contactSchema = new Schema({
+    id: {
+        type: Number,
+        required: true
+    },
+    img: {
+        type: String,
+        required: true
+    },
+    heading: {
+        type: String,
+        required: true
+    },    
+    content1: {
+        type: String,
+        required: true      
+    },
+    button: {
+        type: String,
+        required: true      
+    },
+    link: {
+        type: String,
+        required: true
+    },
+    input: [inputSchema]
 }, {
     timestamps: true
 });

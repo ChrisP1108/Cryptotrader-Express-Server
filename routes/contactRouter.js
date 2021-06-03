@@ -8,7 +8,7 @@ contactRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
     Contact.find()
-    .populate('feedback.author')
+    .populate('input.author')
     .then(contact => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -44,7 +44,7 @@ contactRouter.route('/:contactId')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
     Contact.findById(req.params.contactId)
-    .populate('feedback.author')
+    .populate('input.author')
     .then(contact => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -77,16 +77,16 @@ contactRouter.route('/:contactId')
     .catch(err => next(err));
 });
 
-contactRouter.route('/:contactId/feedback')
+contactRouter.route('/:contactId/input')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
     Contact.findById(req.params.contactId)
-    .populate('feedback.author')
+    .populate('input.author')
     .then(contact => {
         if (contact) {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.json(contact.feedback);
+            res.json(contact.input);
         } else {
             err = new Error(`Campsite ${req.params.contactId} not found`);
             err.status = 404;
@@ -100,7 +100,7 @@ contactRouter.route('/:contactId/feedback')
     .then(contact => {
         if (contact) {
             req.body.author = req.user._id;
-            contact.feedback.push(req.body);
+            contact.input.push(req.body);
             contact.save()
             .then(contact => {
                 res.statusCode = 200;
@@ -118,14 +118,14 @@ contactRouter.route('/:contactId/feedback')
 })
 .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
-    res.end(`PUT operation not supported on /contact/${req.params.contactId}/feedback`);
+    res.end(`PUT operation not supported on /contact/${req.params.contactId}/input`);
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Contact.findById(req.params.contactId)
     .then(contact => {
         if (contact) {
-            for (let i = (contact.feedback.length-1); i >= 0; i--) {
-                contact.feedback.id(contact.feedback[i]._id).remove();
+            for (let i = (contact.input.length-1); i >= 0; i--) {
+                contact.input.id(contact.input[i]._id).remove();
             }
             contact.save()
             .then(contact => {
@@ -135,7 +135,7 @@ contactRouter.route('/:contactId/feedback')
             })
             .catch(err => next(err));
         } else {
-            err = new Error(`Contact Feedback ${req.params.contactId} not found`);
+            err = new Error(`Contact input ${req.params.contactId} not found`);
             err.status = 404;
             return next(err);
         }
@@ -143,22 +143,22 @@ contactRouter.route('/:contactId/feedback')
     .catch(err => next(err));
 });
 
-contactRouter.route('/:contactId/feedback/:feedbackId')
+contactRouter.route('/:contactId/input/:inputId')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
 .get(cors.cors, (req, res, next) => {
     Contact.findById(req.params.contactId)
-    .populate('feedback.author')
+    .populate('input.author')
     .then(contact => {
-        if (contact && contact.feedback.id(req.params.feedbackId)) {
+        if (contact && contact.input.id(req.params.inputId)) {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.json(campsite.comments.id(req.params.feedbackId));
+            res.json(contact.input.id(req.params.inputId));
         } else if (!contact) {
             err = new Error(`Contact ${req.params.contactId} not found`);
             err.status = 404;
             return next(err);
         } else {
-            err = new Error(`Feedback ${req.params.feedbackId} not found`);
+            err = new Error(`input ${req.params.inputId} not found`);
             err.status = 404;
             return next(err);
         }
@@ -167,18 +167,30 @@ contactRouter.route('/:contactId/feedback/:feedbackId')
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
-    res.end(`POST operation not supported on /contact/${req.params.contactId}/feedback/${req.params.feedbackId}`);
+    res.end(`POST operation not supported on /contact/${req.params.contactId}/input/${req.params.inputId}`);
 })
 .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Contact.findById(req.params.contactId)
     .then(contact => {  
-        if ((req.user._id).equals(contact.feedback.id(req.params.feedbackId).author._id)) {
-            if (contact && contact.feedback.id(req.params.feedbackId)) {
-                if (req.body.rating) {
-                    contact.feedback.id(req.params.feedbackId).rating = req.body.rating;
+        if ((req.user._id).equals(contact.input.id(req.params.inputId).author._id)) {
+            if (contact && contact.input.id(req.params.inputId)) {
+                if (req.body.firstName) {
+                    contact.input.id(req.params.inputId).firstName = req.body.firstName;
                 }
-                if (req.body.text) {
-                    contact.feedback.id(req.params.feedbackId).text = req.body.text;
+                if (req.body.lastName) {
+                    contact.input.id(req.params.inputId).lastName = req.body.lastName;
+                }
+                if (req.body.phoneNum) {
+                    contact.input.id(req.params.inputId).phoneNum = req.body.phoneNum;
+                }
+                if (req.body.email) {
+                    contact.input.id(req.params.inputId).email = req.body.email;
+                }
+                if (req.body.agree) {
+                    contact.input.id(req.params.inputId).agree = req.body.agree;
+                }
+                if (req.body.feedback) {
+                    contact.input.id(req.params.inputId).feedback = req.body.feedback;
                 }
                 contact.save()
                 .then(contact => {
@@ -192,7 +204,7 @@ contactRouter.route('/:contactId/feedback/:feedbackId')
                 err.status = 404;
                 return next(err);
             } else {
-                err = new Error(`Feedback ${req.params.feedbackId} not found`);
+                err = new Error(`input ${req.params.inputId} not found`);
                 err.status = 404;
                 return next(err);
             }
@@ -207,9 +219,9 @@ contactRouter.route('/:contactId/feedback/:feedbackId')
 .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Contact.findById(req.params.contactId)
     .then(contact => {
-        if ((req.user._id).equals(contact.feedback.id(req.params.feedbackId).author._id)) {
-            if (contact && contact.feedback.id(req.params.feedbackId)) {
-                contact.feedback.id(req.params.feedbackId).remove();
+        if ((req.user._id).equals(contact.input.id(req.params.inputId).author._id)) {
+            if (contact && contact.input.id(req.params.inputId)) {
+                contact.input.id(req.params.inputId).remove();
                 contact.save()
                 .then(contact => {
                     res.statusCode = 200;
@@ -222,7 +234,7 @@ contactRouter.route('/:contactId/feedback/:feedbackId')
                 err.status = 404;
                 return next(err);
             } else {
-                err = new Error(`Feedback ${req.params.feedbackId} not found`);
+                err = new Error(`input ${req.params.inputId} not found`);
                 err.status = 404;
                 return next(err);
             }
