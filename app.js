@@ -8,7 +8,8 @@ const config = require('./config');
 
 
 // Routes
-const indexRouter = require('./routes/indexRouter');
+const indexRouter = require('./routes/index');
+const homeRouter = require('./routes/homeRouter');
 const softwareRouter = require('./routes/softwareRouter');
 const orderRouter = require('./routes/orderRouter');
 const aboutRouter = require('./routes/aboutRouter');
@@ -63,6 +64,7 @@ app.use('/users', usersRouter);
 
 app.use(express.static(__dirname + '/public'));
 
+app.use('/home', homeRouter)
 app.use('/software', softwareRouter);
 app.use('/order', orderRouter);
 app.use('/about', aboutRouter);

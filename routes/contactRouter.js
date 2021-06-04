@@ -1,8 +1,9 @@
 const express = require('express');
 const Contact = require('../models/contact');
-const contactRouter = express.Router();
 const authenticate = require('../authenticate');
 const cors = require('./cors');
+
+const contactRouter = express.Router();
 
 contactRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
